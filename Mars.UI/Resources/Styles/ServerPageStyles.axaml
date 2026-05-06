@@ -1,0 +1,25 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style Selector="ScrollViewer.LogsViewer">
+        <Setter Property="MaxHeight" Value="65" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="MaxHeight" Duration="0:0:0.2" Easing="CubicEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="ScrollViewer.LogsViewer.expanded">
+        <Setter Property="MaxHeight" Value="400" />
+    </Style>
+    
+    <Style Selector="PathIcon.ExpandIcon">
+        <Setter Property="Data" Value="M 7.41,8.58 L 12,13.17 L 16.59,8.58 L 18,10 L 12,16 L 6,10 L 7.41,8.58 Z" />
+    </Style>
+
+    <Style Selector="ToggleButton:checked PathIcon.ExpandIcon">
+        <Setter Property="Data" Value="M 7.41,15.41 L 12,10.83 L 16.59,15.41 L 18,14 L 12,8 L 6,14 L 7.41,15.41 Z" />
+    </Style>
+
+</Styles>

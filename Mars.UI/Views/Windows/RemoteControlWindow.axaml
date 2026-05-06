@@ -1,0 +1,53 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:services="clr-namespace:Mars.UI.Services"
+        xmlns:vm="clr-namespace:Mars.UI.ViewModels"
+        x:Class="Mars.UI.Views.Windows.RemoteControlWindow"
+        x:DataType="vm:ConnectionViewModel"
+        Title="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[RemoteControlWindow.Title]}"
+        Width="800" Height="600"
+        WindowState="Maximized"
+        Background="Black">
+    
+    <Grid RowDefinitions="Auto, *">
+        <!-- Control Panel -->
+        <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" Padding="15,10">
+            <StackPanel Orientation="Horizontal" Spacing="20">
+                <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.RemoteControl]}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                <CheckBox Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.ClipboardSync]}" 
+                          IsChecked="{Binding IsClipboardSyncEnabled}" VerticalAlignment="Center"/>
+                <CheckBox Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.AudioStream]}" 
+                          IsChecked="{Binding IsAudioEnabled}" VerticalAlignment="Center"/>
+                
+                <CheckBox Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[RemoteControlWindow.ShowCursor]}" IsChecked="{Binding ShowCursor}" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[RemoteControlWindow.Quality]}" VerticalAlignment="Center"/>
+                    <ComboBox SelectedItem="{Binding SelectedQuality}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource StringLocalizationConverter}, ConverterParameter='RemoteControlWindow.Quality'}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                        <x:String>best</x:String>
+                        <x:String>optimal</x:String>
+                        <x:String>performance</x:String>
+                    </ComboBox>
+                </StackPanel>
+
+                <Button Command="{Binding OpenFileExplorerCommand}" 
+                        Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.OpenFileExplorer]}" 
+                        VerticalAlignment="Center" 
+                        Margin="20,0,0,0"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- Video Stream Area -->
+        <Grid Grid.Row="1" Background="Black" Name="VideoContainer">
+            <Image x:Name="VideoImage" Stretch="Uniform" RenderOptions.BitmapInterpolationMode="LowQuality" />
+            <TextBlock x:Name="StatusTextBlock" Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[RemoteControlWindow.VideoStreamArea]}" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+            
+            <!-- Transparent overlay for input capture (works directly now — no HwndHost!) -->
+            <Border x:Name="InputOverlay" Background="Transparent" Focusable="True" />
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,71 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <Border Padding="20">
+            <!--  Add Controls for Previewer Here  -->
+        </Border>
+    </Design.PreviewWith>
+
+    <Style Selector="Border#SidebarBorder">
+        <Setter Property="Width" Value="220" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition
+                    Duration="0:0:0.3"
+                    Easing="CubicEaseOut"
+                    Property="Width" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="Border#SidebarBorder.collapsed">
+        <Setter Property="Width" Value="60" />
+    </Style>
+
+    <Style Selector="StackPanel.MenuButtons RadioButton">
+        <Setter Property="Theme" Value="{DynamicResource {x:Type ToggleButton}}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Padding" Value="12,10" />
+        <Setter Property="Margin" Value="0,2" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Duration="0:0:0.1" Property="Background" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="StackPanel.MenuButtons RadioButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.MenuButtons RadioButton:checked /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
+    </Style>
+
+    <Style Selector="StackPanel.MenuButtons RadioButton Path.MenuIcon">
+        <Setter Property="Stroke" Value="{DynamicResource ToggleButtonForeground}" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Duration="0:0:0.1" Property="Stroke" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="StackPanel.MenuButtons RadioButton:pointerover Path.MenuIcon">
+        <Setter Property="Stroke" Value="{DynamicResource ToggleButtonForegroundPointerOver}" />
+    </Style>
+
+    <Style Selector="StackPanel.MenuButtons RadioButton:checked Path.MenuIcon">
+        <Setter Property="Stroke" Value="{DynamicResource ToggleButtonForegroundChecked}" />
+    </Style>
+
+    <Style Selector="StackPanel.MenuButtons.collapsed RadioButton TextBlock">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
+
+    <Style Selector="StackPanel.MenuButtons.collapsed RadioButton PathIcon">
+        <Setter Property="Margin" Value="0" />
+    </Style>
+</Styles>

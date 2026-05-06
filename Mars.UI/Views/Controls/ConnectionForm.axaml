@@ -1,0 +1,111 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="Mars.UI.Views.Controls.ConnectionForm"
+    x:DataType="vm:ConnectionViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:controls="clr-namespace:Mars.UI.Views.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:services="clr-namespace:Mars.UI.Services"
+    xmlns:vm="clr-namespace:Mars.UI.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="20" Margin="0,15,0,0">
+        <StackPanel>
+            <TextBlock FontSize="16" Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionsPage.Title]}" />
+            <TextBlock
+                FontSize="14"
+                FontWeight="Light"
+                Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionsPage.SubTitle]}" />
+        </StackPanel>
+        
+        <StackPanel Grid.Row="1" Spacing="8">
+            <TextBlock
+                FontSize="14"
+                FontWeight="SemiBold"
+                Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionsPage.DirectConnect.Title]}" />
+            <TextBlock
+                FontSize="13"
+                FontWeight="Light"
+                Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionsPage.DirectConnect.Description]}" />
+            
+            <StackPanel Orientation="Horizontal" Spacing="50">
+                <StackPanel Orientation="Vertical" Spacing="8">
+                    <TextBlock
+                        FontSize="14"
+                        Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionsPage.DirectConnect.IpAddress]}"
+                        VerticalAlignment="Center" />
+                    <TextBox
+                        FontSize="13"
+                        MinWidth="130"
+                        PlaceholderText="localhost"
+                        Text="{Binding ServerIpAddress}" />
+                </StackPanel>
+                
+                <StackPanel Orientation="Vertical" Spacing="8">
+                    <TextBlock
+                        FontSize="14"
+                        Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionsPage.DirectConnect.Port]}"
+                        VerticalAlignment="Center" />
+                    <TextBox
+                        FontSize="13"
+                        MinWidth="130"
+                        PlaceholderText="8000"
+                        Text="{Binding ServerPort}" />
+                </StackPanel>
+                
+                <Button
+                    Command="{Binding ConnectCommand}"
+                    Margin="0"
+                    MinWidth="130"
+                    Padding="20,8"
+                    VerticalAlignment="Bottom">
+                    <TextBlock
+                        FontSize="14"
+                        HorizontalAlignment="Center"
+                        Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionsPage.DirectConnect.Button]}" />
+                </Button>
+            </StackPanel>
+        </StackPanel>
+        
+        <StackPanel
+            Grid.Row="2"
+            IsVisible="{Binding HasFavouriteSessions}"
+            Margin="0,0,50,0"
+            Orientation="Vertical"
+            Spacing="8">
+            <TextBlock FontSize="14" Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionsPage.FavouriteSessions.Title]}" />
+            <ItemsControl ItemsSource="{Binding Sessions}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <controls:SessionView
+                            IsVisible="{Binding IsFavourite}"
+                            controls:SessionView.ConnectCommand="{Binding $parent[UserControl].((vm:ConnectionViewModel)DataContext).ConnectCommand}"
+                            controls:SessionView.SessionModel="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+        
+        <StackPanel
+            Grid.Row="3"
+            IsVisible="{Binding HasRegularSessions}"
+            Margin="0,0,50,0"
+            Orientation="Vertical"
+            Spacing="8">
+            <TextBlock FontSize="14" Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionsPage.SessionList.Title]}" />
+            <ItemsControl ItemsSource="{Binding Sessions}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <controls:SessionView
+                            IsVisible="{Binding !IsFavourite}"
+                            controls:SessionView.ConnectCommand="{Binding $parent[UserControl].((vm:ConnectionViewModel)DataContext).ConnectCommand}"
+                            controls:SessionView.SessionModel="{Binding}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Grid>
+</UserControl>

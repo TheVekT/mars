@@ -1,0 +1,320 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Mars.UI.ViewModels"
+        xmlns:services="clr-namespace:Mars.UI.Services"
+        x:Class="Mars.UI.Views.Windows.FileExplorerWindow"
+        x:DataType="vm:FileExplorerViewModel"
+        Title="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorerWindow.Title]}"
+        Width="1100" Height="700"
+        MinWidth="800" MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+
+    <Window.Resources>
+        <!-- Navigation -->
+        <GeometryGroup x:Key="Icon.Back">
+            <Geometry>M19 12H5</Geometry>
+            <Geometry>M12 19l-7-7 7-7</Geometry>
+        </GeometryGroup>
+        <GeometryGroup x:Key="Icon.Refresh">
+            <Geometry>M21 4v6h-6</Geometry>
+            <Geometry>M3 20v-6h6</Geometry>
+            <Geometry>M5.5 9a7 7 0 0 1 11.5 -2.5L21 10</Geometry>
+            <Geometry>M18.5 15a7 7 0 0 1-11.5 2.5L3 14</Geometry>
+        </GeometryGroup>
+        <GeometryGroup x:Key="Icon.Eye">
+            <Geometry>M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z</Geometry>
+            <Geometry>M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z</Geometry>
+        </GeometryGroup>
+        <!-- Clipboard -->
+        <GeometryGroup x:Key="Icon.Copy">
+            <Geometry>M9 9h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z</Geometry>
+            <Geometry>M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1</Geometry>
+        </GeometryGroup>
+        <GeometryGroup x:Key="Icon.Cut">
+            <Geometry>M6 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6z</Geometry>
+            <Geometry>M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6z</Geometry>
+            <Geometry>M20 4L8.12 15.88</Geometry>
+            <Geometry>M14.47 14.48L20 20</Geometry>
+            <Geometry>M8.12 8.12L12 12</Geometry>
+        </GeometryGroup>
+        <GeometryGroup x:Key="Icon.Paste">
+            <Geometry>M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2</Geometry>
+            <Geometry>M9 2h6a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z</Geometry>
+        </GeometryGroup>
+        <!-- File ops -->
+        <GeometryGroup x:Key="Icon.Trash">
+            <Geometry>M3 6h18</Geometry>
+            <Geometry>M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6</Geometry>
+            <Geometry>M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2</Geometry>
+            <Geometry>M10 11v6</Geometry>
+            <Geometry>M14 11v6</Geometry>
+        </GeometryGroup>
+        <GeometryGroup x:Key="Icon.NewFolder">
+            <Geometry>M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z</Geometry>
+            <Geometry>M12 11v6</Geometry>
+            <Geometry>M9 14h6</Geometry>
+        </GeometryGroup>
+        <GeometryGroup x:Key="Icon.ArrowRight">
+            <Geometry>M5 12h14</Geometry>
+            <Geometry>M12 5l7 7-7 7</Geometry>
+        </GeometryGroup>
+        <GeometryGroup x:Key="Icon.ArrowLeft">
+            <Geometry>M19 12H5</Geometry>
+            <Geometry>M12 19l-7-7 7-7</Geometry>
+        </GeometryGroup>
+        <GeometryGroup x:Key="Icon.X">
+            <Geometry>M18 6L6 18</Geometry>
+            <Geometry>M6 6l12 12</Geometry>
+        </GeometryGroup>
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector="Button.toolbar-btn">
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="MinWidth" Value="28"/>
+            <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="Button.toolbar-btn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="*, Auto">
+        <!-- Main dual-pane area -->
+        <Grid Grid.Row="0" ColumnDefinitions="*, 5, *">
+
+            <!-- ============ LOCAL PANEL (LEFT) ============ -->
+            <Border Grid.Column="0" Margin="8,8,4,8" BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}" 
+                    BorderThickness="1" CornerRadius="6">
+                <Grid RowDefinitions="Auto, Auto, *">
+                    <!-- Header -->
+                    <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" Padding="8" CornerRadius="6,6,0,0">
+                        <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorerWindow.LocalFS]}" 
+                                   FontWeight="Bold" FontSize="13"/>
+                    </Border>
+                    
+                    <!-- Toolbar + Path -->
+                    <StackPanel Grid.Row="1" Margin="6,4">
+                        <StackPanel Orientation="Horizontal" Spacing="2">
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Back]}"
+                                    Command="{Binding LocalNavigateBackCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.Back}" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Refresh]}"
+                                    Command="{Binding RefreshLocalCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.Refresh}" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.ToggleHidden]}"
+                                    Command="{Binding LocalToggleHiddenCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.Eye}" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Border Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumBrush}" Margin="4,4"/>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Copy]}"
+                                    Command="{Binding LocalCopyCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.Copy}" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Cut]}"
+                                    Command="{Binding LocalCutCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.Cut}" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Paste]}"
+                                    Command="{Binding LocalPasteCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.Paste}" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Border Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumBrush}" Margin="4,4"/>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.NewFolder]}"
+                                    Command="{Binding LocalNewFolderCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.NewFolder}" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Delete]}"
+                                    Command="{Binding LocalDeleteCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.Trash}" Stroke="#FF5467" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Border Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumBrush}" Margin="4,4"/>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.TransferToRemote]}"
+                                    Command="{Binding TransferToRemoteCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.ArrowRight}" Stroke="#4CAF50" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                        </StackPanel>
+                        <TextBlock Text="{Binding LocalPath}" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" 
+                                   Margin="2,4,2,0" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                    
+                    <!-- File list -->
+                    <ListBox Grid.Row="2" x:Name="LocalFileList"
+                             ItemsSource="{Binding LocalItems}" 
+                             SelectionMode="Multiple"
+                             Background="Transparent"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Open]}"
+                                          x:Name="LocalOpenMenuItem"/>
+                                <Separator/>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Copy]}"
+                                          Command="{Binding LocalCopyCommand}"/>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Cut]}"
+                                          Command="{Binding LocalCutCommand}"/>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Paste]}"
+                                          Command="{Binding LocalPasteCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Rename]}"
+                                          Command="{Binding LocalRenameCommand}"/>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Delete]}"
+                                          Command="{Binding LocalDeleteCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.NewFolder]}"
+                                          Command="{Binding LocalNewFolderCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.TransferToRemote]}"
+                                          Command="{Binding TransferToRemoteCommand}"/>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FileItemViewModel">
+                                <Grid ColumnDefinitions="Auto, *, Auto, Auto" Margin="2" Height="26">
+                                    <TextBlock Text="{Binding Icon}" FontSize="16" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                               FontSize="12"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding FormattedSize}" VerticalAlignment="Center" 
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" FontSize="11" Margin="8,0" MinWidth="60" TextAlignment="Right"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding FormattedDate}" VerticalAlignment="Center" 
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" FontSize="11" MinWidth="110" TextAlignment="Right"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Background="Transparent" ResizeDirection="Columns"/>
+
+            <!-- ============ REMOTE PANEL (RIGHT) ============ -->
+            <Border Grid.Column="2" Margin="4,8,8,8" BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}" 
+                    BorderThickness="1" CornerRadius="6">
+                <Grid RowDefinitions="Auto, Auto, *">
+                    <!-- Header -->
+                    <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" Padding="8" CornerRadius="6,6,0,0">
+                        <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorerWindow.RemoteFS]}" 
+                                   FontWeight="Bold" FontSize="13"/>
+                    </Border>
+                    
+                    <!-- Toolbar + Path -->
+                    <StackPanel Grid.Row="1" Margin="6,4">
+                        <StackPanel Orientation="Horizontal" Spacing="2">
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Back]}"
+                                    Command="{Binding RemoteNavigateBackCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.Back}" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Refresh]}"
+                                    Command="{Binding RefreshRemoteCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.Refresh}" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.ToggleHidden]}"
+                                    Command="{Binding RemoteToggleHiddenCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.Eye}" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Border Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumBrush}" Margin="4,4"/>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Copy]}"
+                                    Command="{Binding RemoteCopyCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.Copy}" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Cut]}"
+                                    Command="{Binding RemoteCutCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.Cut}" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Paste]}"
+                                    Command="{Binding RemotePasteCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.Paste}" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Border Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumBrush}" Margin="4,4"/>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.NewFolder]}"
+                                    Command="{Binding RemoteNewFolderCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.NewFolder}" Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Delete]}"
+                                    Command="{Binding RemoteDeleteCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.Trash}" Stroke="#FF5467" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                            <Border Width="1" Background="{DynamicResource SystemControlForegroundBaseMediumBrush}" Margin="4,4"/>
+                            <Button Classes="toolbar-btn" ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.TransferToLocal]}"
+                                    Command="{Binding TransferToLocalCommand}">
+                                <Viewbox Width="16" Height="16"><Path Data="{StaticResource Icon.ArrowLeft}" Stroke="#2196F3" StrokeThickness="1.5" StrokeJoin="Round" StrokeLineCap="Round" Stretch="Uniform" Margin="1"/></Viewbox>
+                            </Button>
+                        </StackPanel>
+                        <TextBlock Text="{Binding RemotePath}" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" 
+                                   Margin="2,4,2,0" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                    
+                    <!-- File list -->
+                    <ListBox Grid.Row="2" x:Name="RemoteFileList"
+                             ItemsSource="{Binding RemoteItems}" 
+                             SelectionMode="Multiple"
+                             Background="Transparent"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Open]}"
+                                          x:Name="RemoteOpenMenuItem"/>
+                                <Separator/>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Copy]}"
+                                          Command="{Binding RemoteCopyCommand}"/>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Cut]}"
+                                          Command="{Binding RemoteCutCommand}"/>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Paste]}"
+                                          Command="{Binding RemotePasteCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Rename]}"
+                                          Command="{Binding RemoteRenameCommand}"/>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Delete]}"
+                                          Command="{Binding RemoteDeleteCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.NewFolder]}"
+                                          Command="{Binding RemoteNewFolderCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.TransferToLocal]}"
+                                          Command="{Binding TransferToLocalCommand}"/>
+                            </ContextMenu>
+                        </ListBox.ContextMenu>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:FileItemViewModel">
+                                <Grid ColumnDefinitions="Auto, *, Auto, Auto" Margin="2" Height="26">
+                                    <TextBlock Text="{Binding Icon}" FontSize="16" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                               FontSize="12"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding FormattedSize}" VerticalAlignment="Center" 
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" FontSize="11" Margin="8,0" MinWidth="60" TextAlignment="Right"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding FormattedDate}" VerticalAlignment="Center" 
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" FontSize="11" MinWidth="110" TextAlignment="Right"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ============ BOTTOM STATUS / PROGRESS BAR ============ -->
+        <Border Grid.Row="1" Padding="10,6" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+            <Grid ColumnDefinitions="*, Auto">
+                <!-- Transfer progress -->
+                <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding IsTransferring}" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding TransferStatus}" FontSize="12" VerticalAlignment="Center"/>
+                    <ProgressBar Value="{Binding TransferProgress}" Width="250" Height="14" Minimum="0" Maximum="100"/>
+                    <TextBlock Text="{Binding TransferProgress, StringFormat={}{0:F0}%}" FontSize="11" VerticalAlignment="Center"/>
+                    <Button Classes="toolbar-btn" Command="{Binding CancelTransferCommand}"
+                            ToolTip.Tip="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Cancel]}">
+                        <Viewbox Width="12" Height="12"><Path Data="{StaticResource Icon.X}" Stroke="#FF5467" StrokeThickness="2" StrokeLineCap="Round"/></Viewbox>
+                    </Button>
+                </StackPanel>
+                
+                <!-- Error message -->
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="#e74c3c" FontSize="12" 
+                           VerticalAlignment="Center" IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

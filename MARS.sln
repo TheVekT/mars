@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mars.Shared", "Mars.Shared\Mars.Shared.csproj", "{B7D3B6E3-E068-489F-A46E-6316D275B2BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mars.Daemon", "Mars.Daemon\Mars.Daemon.csproj", "{7B6487EA-E8B5-4ECD-BA6C-F580B749548F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mars.CLI", "Mars.CLI\Mars.CLI.csproj", "{81C85D84-58F8-4131-A0BC-514388A33723}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mars.UI", "Mars.UI\Mars.UI.csproj", "{BA3EA639-90CF-420A-9F36-9FD85E99BB2D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B7D3B6E3-E068-489F-A46E-6316D275B2BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7D3B6E3-E068-489F-A46E-6316D275B2BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7D3B6E3-E068-489F-A46E-6316D275B2BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7D3B6E3-E068-489F-A46E-6316D275B2BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B6487EA-E8B5-4ECD-BA6C-F580B749548F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B6487EA-E8B5-4ECD-BA6C-F580B749548F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B6487EA-E8B5-4ECD-BA6C-F580B749548F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B6487EA-E8B5-4ECD-BA6C-F580B749548F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81C85D84-58F8-4131-A0BC-514388A33723}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81C85D84-58F8-4131-A0BC-514388A33723}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81C85D84-58F8-4131-A0BC-514388A33723}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81C85D84-58F8-4131-A0BC-514388A33723}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA3EA639-90CF-420A-9F36-9FD85E99BB2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA3EA639-90CF-420A-9F36-9FD85E99BB2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA3EA639-90CF-420A-9F36-9FD85E99BB2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA3EA639-90CF-420A-9F36-9FD85E99BB2D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

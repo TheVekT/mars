@@ -1,0 +1,24 @@
+<Application
+    RequestedThemeVariant="Default"
+    x:Class="Mars.UI.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:local="using:Mars.UI"
+    xmlns:views="clr-namespace:Mars.UI.Views"
+    xmlns:vm="clr-namespace:Mars.UI.ViewModels"
+    xmlns:conv="clr-namespace:Mars.UI.Converters"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--  "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options.  -->
+
+    <Application.Resources>
+        <conv:StringFormatConverter x:Key="StringFormatConverter" />
+        <conv:StringLocalizationConverter x:Key="StringLocalizationConverter" />
+    </Application.Resources>
+
+
+
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="/Resources/Styles/Global.axaml" />
+    </Application.Styles>
+</Application>

@@ -1,0 +1,27 @@
+﻿
+<Project>
+    <PropertyGroup>
+        <CurrentRID Condition="'$(RuntimeIdentifier)' == ''">Any</CurrentRID>
+        <CurrentRID Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</CurrentRID>
+
+        <OutputPath>$(MSBuildThisFileDirectory)Build\$(Configuration)\$(CurrentRID)\</OutputPath>
+        <PublishDir>$(OutputPath)</PublishDir>
+
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+
+        <DeleteExistingFiles>false</DeleteExistingFiles>
+    </PropertyGroup>
+
+    <Target Name="UnzipWinRuntime" BeforeTargets="BeforeBuild" Condition="!Exists('../python-runtime/win64/python.exe') And Exists('../python-runtime/win64.zip')">
+        <Message Importance="High" Text="Unzipping Windows Python Runtime..."/>
+        <MakeDir Directories="../python-runtime/win64"/>
+        <Unzip SourceFiles="../python-runtime/win64.zip" DestinationFolder="../python-runtime/win64"/>
+    </Target>
+
+    <Target Name="UnzipLinuxRuntime" BeforeTargets="BeforeBuild" Condition="!Exists('../python-runtime/linux/bin/python') And Exists('../python-runtime/linux.tar.gz')">
+        <Message Importance="High" Text="Unzipping Linux Python Runtime using tar..."/>
+        <MakeDir Directories="../python-runtime/linux"/>
+        <Exec Command="tar -xzf ../python-runtime/linux.tar.gz -C ../python-runtime/linux"/>
+    </Target>
+</Project>

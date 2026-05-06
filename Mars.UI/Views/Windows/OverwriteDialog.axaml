@@ -1,0 +1,32 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:services="clr-namespace:Mars.UI.Services"
+        x:Class="Mars.UI.Views.Windows.OverwriteDialog"
+        Title="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.OverwriteTitle]}"
+        Width="420" Height="200"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+        TransparencyLevelHint="Mica"
+        ExtendClientAreaToDecorationsHint="True">
+    
+    <Grid RowDefinitions="*, Auto, Auto" Margin="20, 40, 20, 20">
+        <StackPanel VerticalAlignment="Center" Spacing="8">
+            <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.OverwriteMessage]}" 
+                       FontSize="14" TextWrapping="Wrap"/>
+            <TextBlock x:Name="FileNameText" FontWeight="Bold" FontSize="14" TextWrapping="Wrap"/>
+        </StackPanel>
+        
+        <CheckBox x:Name="ApplyToAllCheck" Grid.Row="1" Margin="0,8,0,12"
+                  Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.ApplyToAll]}"/>
+        
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <Button Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Overwrite]}" 
+                    Classes="Accent" Click="Overwrite_Click" Padding="16,8"/>
+            <Button Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Skip]}" 
+                    Click="Skip_Click" Padding="16,8"/>
+            <Button Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[FileExplorer.Cancel]}" 
+                    Click="Cancel_Click" Padding="16,8"/>
+        </StackPanel>
+    </Grid>
+</Window>

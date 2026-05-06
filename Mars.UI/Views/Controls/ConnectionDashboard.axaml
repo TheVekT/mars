@@ -1,0 +1,284 @@
+<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="Mars.UI.Views.Controls.ConnectionDashboard"
+    x:DataType="vm:ConnectionViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:services="clr-namespace:Mars.UI.Services"
+    xmlns:vm="clr-namespace:Mars.UI.ViewModels"
+    xmlns:vmHttp="clr-namespace:Mars.UI.ViewModels.HttpModules"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid ColumnDefinitions="300, 250, *" RowDefinitions="Auto, *" Margin="0,15,0,0">
+        <Grid Grid.ColumnSpan="3" Margin="0,0,0,20">
+            <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.Title]}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+            <Button Command="{Binding DisconnectCommand}" Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.Disconnect]}" HorizontalAlignment="Right" Padding="15,6"/>
+        </Grid>
+        
+        <!-- Local/Hardcoded controls -->
+        <StackPanel Grid.Row="1" Grid.Column="0" Spacing="15" Margin="0,0,40,0">
+            <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.RemoteControl]}" FontSize="16" FontWeight="SemiBold"/>
+            
+            <Border CornerRadius="8" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Height="160" ClipToBounds="True">
+                <Button Command="{Binding OpenRemoteControlCommand}" 
+                        IsEnabled="{Binding IsRemoteControlSupported}"
+                        Background="Transparent" 
+                        Padding="0" 
+                        HorizontalAlignment="Stretch" 
+                        VerticalAlignment="Stretch" 
+                        Cursor="Hand">
+                    <Grid>
+                        <!-- Desktop Icon pattern or abstract representation -->
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+                            <!-- SVG Path for a Monitor/Screen -->
+                            <Path Data="M2,4 A2,2 0 0,0 0,6 V18 A2,2 0 0,0 2,20 H8 V22 H16 V20 H22 A2,2 0 0,0 24,18 V6 A2,2 0 0,0 22,4 H2 Z M2,6 H22 V16 H2 V6 Z" 
+                                  Fill="{DynamicResource SystemAccentColor}" Width="48" Height="48" Stretch="Uniform" HorizontalAlignment="Center" Opacity="0.8"/>
+                            
+                            <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.RemoteControl]}" 
+                                       Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" 
+                                       FontWeight="Bold" FontSize="14" HorizontalAlignment="Center"/>
+                            
+                            <Border Background="{DynamicResource SystemAccentColor}" CornerRadius="4" Padding="12,6" Margin="0,5,0,0">
+                                <Panel>
+                                    <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.OpenFullscreen]}" 
+                                               IsVisible="{Binding IsRemoteControlSupported}"
+                                               Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.NotSupported]}" 
+                                               IsVisible="{Binding !IsRemoteControlSupported}"
+                                               Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                </Panel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Button>
+            </Border>
+            
+            <CheckBox IsChecked="{Binding IsClipboardSyncEnabled}" IsEnabled="{Binding IsClipboardSyncSupported}">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.ClipboardSync]}" />
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.NotSupported], StringFormat='({0})'}" 
+                               IsVisible="{Binding !IsClipboardSyncSupported}" Opacity="0.7" FontSize="11" VerticalAlignment="Center"/>
+                </StackPanel>
+            </CheckBox>
+            <CheckBox IsChecked="{Binding IsAudioEnabled}" IsEnabled="{Binding IsAudioStreamSupported}">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.AudioStream]}" />
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.NotSupported], StringFormat='({0})'}" 
+                               IsVisible="{Binding !IsAudioStreamSupported}" Opacity="0.7" FontSize="11" VerticalAlignment="Center"/>
+                </StackPanel>
+            </CheckBox>
+            <Button Command="{Binding OpenFileExplorerCommand}" Padding="15,8" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsEnabled="{Binding IsFileExplorerSupported}">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.OpenFileExplorer]}" />
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.NotSupported], StringFormat='({0})'}" 
+                               IsVisible="{Binding !IsFileExplorerSupported}" Opacity="0.7" FontSize="11" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+        
+        <!-- Modules List (Middle Column) -->
+        <StackPanel Grid.Row="1" Grid.Column="1" Spacing="15" Margin="0,0,20,0">
+            <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionDashboard.Modules]}" FontSize="16" FontWeight="SemiBold"/>
+            
+            <ListBox ItemsSource="{Binding Modules}" 
+                     SelectedItem="{Binding SelectedModule}"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Padding="0">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding ModuleName}" Padding="10,8" FontSize="14"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+                <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Margin" Value="0,0,0,8" />
+                        <Setter Property="CornerRadius" Value="6" />
+                    </Style>
+                </ListBox.Styles>
+            </ListBox>
+        </StackPanel>
+        
+        <!-- Module Content (Right Column) -->
+        <Border Grid.Row="1" Grid.Column="2" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" CornerRadius="8" Padding="20">
+            <ScrollViewer>
+                <ContentControl Content="{Binding SelectedModule}">
+                    <ContentControl.DataTemplates>
+                        <DataTemplate DataType="vmHttp:HttpModuleViewModel">
+                            <StackPanel Spacing="15">
+                                <TextBlock Text="{Binding ModuleName}" FontSize="20" FontWeight="Bold" />
+                                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="4" Padding="8,4" HorizontalAlignment="Left">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[HttpModule.Compatibility]}" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                                        <TextBlock Text="{Binding CompatibilityLabel}" FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                                    </StackPanel>
+                                </Border>
+                                <ItemsControl ItemsSource="{Binding Actions}" Margin="0,15,0,0">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Spacing="15" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.DataTemplates>
+                                        <!-- Scalar -->
+                                        <DataTemplate DataType="vmHttp:ScalarActionViewModel">
+                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                <TextBlock Text="{Binding Label, StringFormat='{}{0}:'}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Value}" Foreground="{DynamicResource SystemAccentColor}" Classes.error="{Binding IsError}">
+                                                    <TextBlock.Styles>
+                                                        <Style Selector="TextBlock.error">
+                                                            <Setter Property="Foreground" Value="#ff3333"/>
+                                                        </Style>
+                                                    </TextBlock.Styles>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                        
+                                        <!-- Multiline -->
+                                        <DataTemplate DataType="vmHttp:MultilineActionViewModel">
+                                            <StackPanel Spacing="5">
+                                                <TextBlock Text="{Binding Label, StringFormat='🧾 {0}'}" FontWeight="SemiBold"/>
+                                                <Border Background="#1e1e1e" CornerRadius="4" Padding="10">
+                                                    <ScrollViewer MaxHeight="300">
+                                                        <TextBlock Text="{Binding TextValue}" FontFamily="Consolas, monospace" Foreground="#d4d4d4" TextWrapping="Wrap"/>
+                                                    </ScrollViewer>
+                                                </Border>
+                                            </StackPanel>
+                                        </DataTemplate>
+
+                                        <!-- Dataset -->
+                                        <DataTemplate DataType="vmHttp:DatasetActionViewModel">
+                                            <StackPanel Spacing="5">
+                                                <TextBlock Text="{Binding Label, StringFormat='📊 {0}'}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding !HasData}" Foreground="Gray" FontStyle="Italic"/>
+                                                <Border BorderThickness="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" CornerRadius="4" IsVisible="{Binding HasData}" MaxHeight="300">
+                                                    <ScrollViewer>
+                                                        <StackPanel>
+                                                            <!-- Header -->
+                                                            <ItemsControl ItemsSource="{Binding Columns}">
+                                                                <ItemsControl.ItemsPanel>
+                                                                    <ItemsPanelTemplate>
+                                                                        <UniformGrid Rows="1" />
+                                                                    </ItemsPanelTemplate>
+                                                                </ItemsControl.ItemsPanel>
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <Border BorderThickness="0,0,1,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" Padding="8,6" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+                                                                            <TextBlock Text="{Binding}" FontWeight="Bold" TextWrapping="Wrap"/>
+                                                                        </Border>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                            <!-- Rows -->
+                                                            <ItemsControl ItemsSource="{Binding Rows}">
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <ItemsControl ItemsSource="{Binding Cells}">
+                                                                            <ItemsControl.ItemsPanel>
+                                                                                <ItemsPanelTemplate>
+                                                                                    <UniformGrid Rows="1" />
+                                                                                </ItemsPanelTemplate>
+                                                                            </ItemsControl.ItemsPanel>
+                                                                            <ItemsControl.ItemTemplate>
+                                                                                <DataTemplate>
+                                                                                    <Border BorderThickness="0,0,1,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" Padding="8,6">
+                                                                                        <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
+                                                                                    </Border>
+                                                                                </DataTemplate>
+                                                                            </ItemsControl.ItemTemplate>
+                                                                        </ItemsControl>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </StackPanel>
+                                                    </ScrollViewer>
+                                                </Border>
+                                            </StackPanel>
+                                        </DataTemplate>
+
+                                        <!-- Boolean -->
+                                        <DataTemplate DataType="vmHttp:BooleanActionViewModel">
+                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
+                                                <ToggleSwitch IsChecked="{Binding IsChecked}" OnContent="" OffContent=""/>
+                                            </StackPanel>
+                                        </DataTemplate>
+
+                                        <!-- Range -->
+                                        <DataTemplate DataType="vmHttp:RangeActionViewModel">
+                                            <StackPanel Spacing="5">
+                                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                                    <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding ValueText}" Foreground="{DynamicResource SystemAccentColor}" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <Slider Minimum="{Binding Minimum}" Maximum="{Binding Maximum}" Value="{Binding Value}" />
+                                            </StackPanel>
+                                        </DataTemplate>
+
+                                        <!-- Execute Button -->
+                                        <DataTemplate DataType="vmHttp:ExecuteButtonActionViewModel">
+                                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                                <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
+                                                <Button Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[HttpModule.Execute]}" Command="{Binding ExecuteCommand}" Classes.danger="{Binding IsDanger}">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button.danger">
+                                                            <Setter Property="Background" Value="#ff3333"/>
+                                                            <Setter Property="Foreground" Value="White"/>
+                                                        </Style>
+                                                    </Button.Styles>
+                                                </Button>
+                                            </StackPanel>
+                                        </DataTemplate>
+
+                                        <!-- Execute Form -->
+                                        <DataTemplate DataType="vmHttp:ExecuteFormActionViewModel">
+                                            <StackPanel Spacing="10">
+                                                <TextBlock Text="{Binding Label, StringFormat='⚙️ {0}'}" FontWeight="SemiBold"/>
+                                                <ItemsControl ItemsSource="{Binding FormParameters}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Spacing="5" Margin="0,0,0,10">
+                                                                <TextBlock Text="{Binding Label}" Foreground="Gray" FontSize="12"/>
+                                                                <StackPanel IsVisible="{Binding Type, Converter={x:Static ObjectConverters.Equal}, ConverterParameter='input_string'}">
+                                                                    <TextBox Text="{Binding InputValue}" Watermark="{Binding Label}"/>
+                                                                </StackPanel>
+                                                                <StackPanel IsVisible="{Binding Type, Converter={x:Static ObjectConverters.Equal}, ConverterParameter='select_from_dataset'}">
+                                                                    <ComboBox ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption}" HorizontalAlignment="Stretch">
+                                                                        <ComboBox.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <TextBlock Text="{Binding Display}"/>
+                                                                            </DataTemplate>
+                                                                        </ComboBox.ItemTemplate>
+                                                                    </ComboBox>
+                                                                </StackPanel>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                                    <Button Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[HttpModule.ExecuteAction]}" Command="{Binding ExecuteCommand}" Classes.danger="{Binding IsDanger}">
+                                                        <Button.Styles>
+                                                            <Style Selector="Button.danger">
+                                                                <Setter Property="Background" Value="#ff3333"/>
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                            </Style>
+                                                        </Button.Styles>
+                                                    </Button>
+                                                    <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center" Foreground="{DynamicResource SystemAccentColor}"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.DataTemplates>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ContentControl.DataTemplates>
+                </ContentControl>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

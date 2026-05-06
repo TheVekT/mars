@@ -1,0 +1,273 @@
+<UserControl
+    d:DesignHeight="550"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="Mars.UI.Views.ServerPage"
+    x:DataType="vm:ServerViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:services="clr-namespace:Mars.UI.Services"
+    xmlns:views="clr-namespace:Mars.UI.Views"
+    xmlns:vm="clr-namespace:Mars.UI.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.DataContext>
+        <vm:ServerViewModel />
+    </Design.DataContext>
+
+    <UserControl.Styles>
+        <StyleInclude Source="/Resources/Styles/ServerPageStyles.axaml" />
+    </UserControl.Styles>
+    <Grid RowDefinitions="Auto,*" RowSpacing="20">
+        <StackPanel>
+            <TextBlock FontSize="16" Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Title]}" />
+            <TextBlock
+                FontSize="14"
+                FontWeight="Light"
+                Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.SubTitle]}" />
+        </StackPanel>
+        <Grid Grid.Row="1">
+            <!--  Main content: visible when daemon is connected  -->
+            <ScrollViewer
+                HorizontalScrollBarVisibility="Disabled"
+                IsVisible="{Binding IsDaemonConnected}"
+                VerticalScrollBarVisibility="Auto">
+                <StackPanel Orientation="Vertical" Spacing="15">
+                    <StackPanel Spacing="8">
+                        <Border
+                            Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                            CornerRadius="6"
+                            Padding="10,5">
+                            <StackPanel Orientation="Vertical">
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="5">
+                                    <StackPanel Orientation="Horizontal" Spacing="5">
+                                        <TextBlock
+                                            FontSize="13"
+                                            Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.StatusLabel]}"
+                                            VerticalAlignment="Center" />
+                                        <TextBlock
+                                            FontSize="13"
+                                            FontWeight="Bold"
+                                            Text="{Binding ServerStatus}"
+                                            VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <Button
+                                        Command="{Binding StartStopServerCommand}"
+                                        Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Buttons.Start]}"
+                                        FontSize="13"
+                                        Grid.Column="1"
+                                        IsEnabled="{Binding !IsServerRunning}"
+                                        Padding="15,5" />
+                                    <Button
+                                        Classes="DangerButton"
+                                        Command="{Binding StartStopServerCommand}"
+                                        Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Buttons.Stop]}"
+                                        FontSize="13"
+                                        Grid.Column="2"
+                                        IsEnabled="{Binding IsServerRunning}"
+                                        Padding="15,5" />
+                                </Grid>
+                                <Separator
+                                    Background="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                                    Height="1"
+                                    Margin="0,10,0,10" />
+                                <TextBlock FontSize="13" Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Console.Title]}" />
+                                <Grid>
+                                    <ScrollViewer
+                                        Classes="LogsViewer"
+                                        Classes.expanded="{Binding IsLogsExpanded}"
+                                        x:Name="LogsScrollViewer">
+                                        <TextBlock
+                                            Text="{Binding ConsoleLogs}"
+                                            TextWrapping="Wrap"
+                                            x:Name="LogsTextBlock" />
+                                    </ScrollViewer>
+                                    <ToggleButton
+                                        CornerRadius="15"
+                                        HorizontalAlignment="Right"
+                                        IsChecked="{Binding IsLogsExpanded}"
+                                        Margin="0,0,25,10"
+                                        Padding="5"
+                                        VerticalAlignment="Bottom">
+                                        <PathIcon
+                                            Classes="ExpandIcon"
+                                            Height="10"
+                                            Width="10" />
+                                    </ToggleButton>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical" Spacing="8">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Configuration.Title]}" />
+                        <StackPanel Orientation="Horizontal" Spacing="50">
+                            <StackPanel Orientation="Vertical" Spacing="8">
+                                <StackPanel Orientation="Horizontal" Spacing="50">
+                                    <StackPanel Orientation="Vertical" Spacing="8">
+                                        <TextBlock
+                                            FontSize="14"
+                                            Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Configuration.IpAddress]}"
+                                            VerticalAlignment="Center" />
+                                        <TextBox
+                                            FontSize="13"
+                                            MinWidth="130"
+                                            PlaceholderText="0.0.0.0"
+                                            Text="{Binding ServerIpAddress}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Vertical" Spacing="8">
+                                        <TextBlock
+                                            FontSize="14"
+                                            Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Configuration.Port]}"
+                                            VerticalAlignment="Center" />
+                                        <TextBox
+                                            FontSize="13"
+                                            MinWidth="130"
+                                            PlaceholderText="8000"
+                                            Text="{Binding ServerPort}" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <TextBlock
+                                    FontSize="12"
+                                    FontWeight="Light"
+                                    Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Configuration.Description]}"
+                                    TextWrapping="Wrap" />
+
+                            </StackPanel>
+                            <StackPanel Orientation="Vertical" Spacing="8">
+                                <TextBlock
+                                    FontSize="14"
+                                    Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Configuration.Password]}"
+                                    VerticalAlignment="Center" />
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <TextBox
+                                        FontSize="13"
+                                        MinWidth="130"
+                                        Text="{Binding ServerPassword}" />
+                                    <Button
+                                        Command="{Binding SetPasswordCommand}"
+                                        Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Buttons.Apply]}"
+                                        FontSize="13"
+                                        Padding="15,5" />
+                                </StackPanel>
+                                <TextBlock
+                                    FontSize="12"
+                                    FontWeight="Light"
+                                    Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Configuration.PasswordDesc]}"
+                                    TextWrapping="Wrap"
+                                    VerticalAlignment="Center" />
+                            </StackPanel>
+                        </StackPanel>
+                        <CheckBox
+                            Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Configuration.Autostart]}"
+                            FontSize="14"
+                            IsChecked="{Binding IsAutorunServer}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical" Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Modules.Title]}" />
+                            <Button
+                                Command="{Binding OpenMarketplaceCommand}"
+                                Grid.Column="1"
+                                Padding="20,8"
+                                x:Name="MarketplaceButton">
+                                <StackPanel Orientation="Horizontal" Spacing="15">
+                                    <PathIcon
+                                        Data="M352-120H200q-33 0-56.5-23.5T120-200v-152q48 0 84-30.5t36-77.5q0-47-36-77.5T120-568v-152q0-33 23.5-56.5T200-800h160q0-42 29-71t71-29q42 0 71 29t29 71h160q33 0 56.5 23.5T800-720v160q42 0 71 29t29 71q0 42-29 71t-71 29v160q0 33-23.5 56.5T720-120H568q0-50-31.5-85T460-240q-45 0-76.5 35T352-120Z"
+                                        Height="16"
+                                        Width="16" />
+                                    <TextBlock
+                                        FontSize="14"
+                                        Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Buttons.MoreModules]}"
+                                        VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        <StackPanel Orientation="Vertical" Spacing="10">
+                            <Expander HorizontalAlignment="Stretch">
+                                <Expander.Header>
+                                    <TextBlock FontSize="14">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                                                <Binding Path="[ServerPage.Modules.Enabled]" Source="{x:Static services:LocalizationService.Instance}" />
+                                                <Binding Path="EnabledModulesCount" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </Expander.Header>
+                                <ItemsControl ItemsSource="{Binding Modules}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <views:ModuleItemView
+                                                IsVisible="{Binding !IsDisabled}"
+                                                views:ModuleItemView.DeleteCommand="{Binding $parent[UserControl].((vm:ServerViewModel)DataContext).DeleteModuleCommand}"
+                                                views:ModuleItemView.DisableCommand="{Binding $parent[UserControl].((vm:ServerViewModel)DataContext).DisableModuleCommand}"
+                                                views:ModuleItemView.EnableCommand="{Binding $parent[UserControl].((vm:ServerViewModel)DataContext).EnableModuleCommand}"
+                                                views:ModuleItemView.Module="{Binding}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Expander>
+
+                            <Expander HorizontalAlignment="Stretch">
+                                <Expander.Header>
+                                    <TextBlock FontSize="14">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                                                <Binding Path="[ServerPage.Modules.Disabled]" Source="{x:Static services:LocalizationService.Instance}" />
+                                                <Binding Path="DisabledModulesCount" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </Expander.Header>
+                                <ItemsControl ItemsSource="{Binding Modules}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <views:ModuleItemView
+                                                IsVisible="{Binding IsDisabled}"
+                                                views:ModuleItemView.DeleteCommand="{Binding $parent[UserControl].((vm:ServerViewModel)DataContext).DeleteModuleCommand}"
+                                                views:ModuleItemView.DisableCommand="{Binding $parent[UserControl].((vm:ServerViewModel)DataContext).DisableModuleCommand}"
+                                                views:ModuleItemView.EnableCommand="{Binding $parent[UserControl].((vm:ServerViewModel)DataContext).EnableModuleCommand}"
+                                                views:ModuleItemView.Module="{Binding}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Expander>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!--  Offline overlay: visible when daemon is not connected  -->
+            <StackPanel
+                HorizontalAlignment="Center"
+                IsVisible="{Binding !IsDaemonConnected}"
+                Spacing="12"
+                VerticalAlignment="Center">
+                <Viewbox Height="48" Width="48">
+                    <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" Fill="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                </Viewbox>
+                <TextBlock
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    HorizontalAlignment="Center"
+                    Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.NoConnection.Title]}" />
+                <TextBlock
+                    FontSize="13"
+                    HorizontalAlignment="Center"
+                    Opacity="0.6"
+                    Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.NoConnection.Description]}" />
+                <Button
+                    Command="{Binding RefreshCommand}"
+                    Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ServerPage.Buttons.Retry]}"
+                    HorizontalAlignment="Center"
+                    Padding="20,6" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

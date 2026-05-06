@@ -1,0 +1,203 @@
+<Window
+    Icon="/Assets/logo.ico"
+    MinHeight="600"
+    MinWidth="1000"
+    Title="Mars.UI"
+    d:DesignHeight="600"
+    d:DesignWidth="1000"
+    mc:Ignorable="d"
+    x:Class="Mars.UI.Views.MainWindow"
+    x:DataType="vm:MainWindowViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:services="clr-namespace:Mars.UI.Services"
+    xmlns:views="clr-namespace:Mars.UI.Views"
+    xmlns:vm="using:Mars.UI.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Design.DataContext>
+        <!--
+            This only sets the DataContext for the previewer in an IDE,
+            to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs)
+        -->
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+
+    <Window.Styles>
+        <StyleInclude Source="/Resources/Styles/LeftMenuStyles.axaml" />
+    </Window.Styles>
+
+    <Window.DataTemplates>
+        <DataTemplate DataType="{x:Type vm:ConnectionViewModel}">
+            <views:ConnectionPage />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ServerViewModel}">
+            <views:ServerPage />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+            <views:SettingsPage />
+        </DataTemplate>
+    </Window.DataTemplates>
+
+
+    <Grid>
+        <Grid IsVisible="True" x:Name="StartScreen">
+            <StackPanel
+                HorizontalAlignment="Center"
+                Spacing="5"
+                VerticalAlignment="Center">
+                <TextBlock
+                    FontSize="16"
+                    HorizontalAlignment="Center"
+                    Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[MainWindow.Greeting]}" />
+                <TextBlock
+                    FontSize="14"
+                    FontWeight="Light"
+                    HorizontalAlignment="Center"
+                    Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[MainWindow.Greeting.SubTitle]}" />
+                <StackPanel
+                    Margin="0,8,0,0"
+                    Orientation="Horizontal"
+                    Spacing="5">
+                    <Button
+                        Click="SkipStartScreen"
+                        Command="{Binding OpenConnectionPageCommand}"
+                        Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[MainWindow.Buttons.Connect]}"
+                        FontSize="14"
+                        Padding="40,6" />
+                    <Button
+                        Click="SkipStartScreen"
+                        Command="{Binding OpenServerPageCommand}"
+                        Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[MainWindow.Buttons.Host]}"
+                        FontSize="14"
+                        Padding="40,6" />
+                </StackPanel>
+                <Button
+                    Click="SkipStartScreen"
+                    Command="{Binding OpenSettingsPageCommand}"
+                    Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[MainWindow.Buttons.Settings]}"
+                    FontSize="14"
+                    HorizontalAlignment="Center"
+                    Padding="60,6" />
+            </StackPanel>
+            <TextBlock
+                FontSize="12"
+                FontWeight="ExtraLight"
+                HorizontalAlignment="Center"
+                Margin="0,4"
+                Opacity="0.8"
+                Text="v. 1.0.0"
+                VerticalAlignment="Bottom" />
+        </Grid>
+        <Grid IsVisible="False" x:Name="MainScreenContainer">
+            <Grid ColumnDefinitions="Auto,*">
+                <Border
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                    BorderThickness="0,0,1,0"
+                    Classes.collapsed="{Binding !IsMenuExpanded}"
+                    Grid.Column="0"
+                    Name="SidebarBorder"
+                    Padding="10">
+                    <Grid RowDefinitions="Auto,*,Auto">
+                        <Grid
+                            ColumnDefinitions="Auto,*"
+                            ColumnSpacing="15"
+                            Grid.Row="0"
+                            Margin="0,0,0,20">
+                            <Button
+                                Background="Transparent"
+                                Command="{Binding ToggleMenuCommand}"
+                                CornerRadius="6"
+                                HorizontalAlignment="Center"
+                                Padding="10">
+                                <PathIcon
+                                    Data="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16"
+                                    Height="18"
+                                    Width="18" />
+                            </Button>
+
+                            <TextBlock
+                                FontSize="18"
+                                FontWeight="Bold"
+                                Grid.Column="1"
+                                IsVisible="{Binding IsMenuExpanded}"
+                                Text="MARS"
+                                VerticalAlignment="Center" />
+                        </Grid>
+
+                        <StackPanel
+                            Classes="MenuButtons"
+                            Classes.collapsed="{Binding !IsMenuExpanded}"
+                            Grid.Row="1">
+                            <RadioButton
+                                Command="{Binding OpenConnectionPageCommand}"
+                                GroupName="Menu"
+                                IsChecked="{Binding IsConnectionPageChecked}"
+                                Padding="10">
+                                <StackPanel Orientation="Horizontal" Spacing="15">
+                                    <Viewbox
+                                        Height="18"
+                                        Stretch="Uniform"
+                                        Width="18">
+                                        <Path
+                                            Classes="MenuIcon"
+                                            Data="M 8,3 L 4,7 L 8,11 M 4,7 L 20,7 M 16,21 L 20,17 L 16,13 M 20,17 L 4,17"
+                                            Fill="Transparent"
+                                            Margin="-2,-1,1,1"
+                                            StrokeJoin="Round"
+                                            StrokeLineCap="Round"
+                                            StrokeThickness="2" />
+                                    </Viewbox>
+
+                                    <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[LeftMenu.Buttons.Client]}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </RadioButton>
+
+                            <RadioButton
+                                Command="{Binding OpenServerPageCommand}"
+                                GroupName="Menu"
+                                IsChecked="{Binding IsServerPageChecked}"
+                                Padding="10">
+                                <StackPanel Orientation="Horizontal" Spacing="15">
+                                    <PathIcon
+                                        Data="M696-360q20 0 34-14t14-34q0-20-14-34t-34-14q-20 0-34 14t-14 34q0 20 14 34t34 14ZM96-572l132-127q11-10 23.5-15.5T278-720h403q14 0 26.5 5.5T730-700l134 128H96Zm72 332q-30 0-51-21t-21-51v-184h768v184q0 30-21.5 51T792-240H168Z"
+                                        Height="18"
+                                        Width="18" />
+                                    <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[LeftMenu.Buttons.Server]}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </RadioButton>
+                        </StackPanel>
+
+                        <StackPanel
+                            Classes="MenuButtons"
+                            Classes.collapsed="{Binding !IsMenuExpanded}"
+                            Grid.Row="2">
+                            <RadioButton
+                                Command="{Binding OpenSettingsPageCommand}"
+                                GroupName="Menu"
+                                IsChecked="{Binding IsSettingsPageChecked}"
+                                Padding="10">
+                                <StackPanel Orientation="Horizontal" Spacing="15">
+                                    <PathIcon
+                                        Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.98C19.47,12.66 19.5,12.34 19.5,12C19.5,11.66 19.47,11.34 19.43,11.02L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.65 15.48,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.52,5.32 7.96,5.65 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11.02C4.53,11.34 4.5,11.66 4.5,12C4.5,12.34 4.53,12.66 4.57,12.98L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.95C7.96,18.35 8.52,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.48,18.68 16.04,18.35 16.56,17.95L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.98Z"
+                                        Height="18"
+                                        Width="18" />
+                                    <TextBlock Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[LeftMenu.Buttons.Settings]}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </RadioButton>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border
+                    Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                    Grid.Column="1"
+                    Padding="20">
+                    <ContentControl Content="{Binding AppStore.CurrentView}" />
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

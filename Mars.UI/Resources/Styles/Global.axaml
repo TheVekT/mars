@@ -1,0 +1,55 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style Selector="Button.DangerButton">
+        <Setter Property="Background" Value="#C42B1C" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+
+    <Style Selector="Button.DangerButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#B02719" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+
+    <Style Selector="Button.DangerButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#9C2216" />
+        <Setter Property="Foreground" Value="#CCFFFFFF" />
+    </Style>
+
+    <Style Selector="Button.DangerButton:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#E57373" />
+        <Setter Property="Opacity" Value="0.6" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+
+    <!--  Badge Style  -->
+    <Style Selector="Border.Badge">
+        <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Padding" Value="6,2" />
+    </Style>
+    <Style Selector="Border.Badge TextBlock">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Opacity" Value="0.8" />
+    </Style>
+
+    <!--  Platform Badge Styles  -->
+    <Style Selector="Border.PlatformBadge">
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Padding" Value="6,2" />
+        <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}" />
+    </Style>
+    <Style Selector="Border.PlatformBadge[Tag=windows]">
+        <Setter Property="Background" Value="#1A0078D4" />
+    </Style>
+    <Style Selector="Border.PlatformBadge[Tag=linux]">
+        <Setter Property="Background" Value="#1AF7941D" />
+    </Style>
+    <Style Selector="Border.PlatformBadge[Tag=macos]">
+        <Setter Property="Background" Value="#1A999999" />
+    </Style>
+    <Style Selector="Border.PlatformBadge TextBlock">
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="Opacity" Value="0.85" />
+    </Style>
+
+</Styles>

@@ -1,0 +1,124 @@
+﻿<UserControl
+    Background="Transparent"
+    Height="30"
+    mc:Ignorable="d"
+    x:Class="Mars.UI.Views.Controls.SessionView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:services="clr-namespace:Mars.UI.Services"
+    xmlns:views="clr-namespace:Mars.UI.Views.Controls"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Styles>
+        <Style Selector="CheckBox.Star">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Panel Background="Transparent">
+                        <Path
+                            Data="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                            Height="12"
+                            Name="StarPath"
+                            Stretch="Uniform"
+                            Stroke="#FFB700"
+                            StrokeThickness="1.33"
+                            Width="12" />
+                    </Panel>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="CheckBox.Star:unchecked /template/ Path#StarPath">
+            <Setter Property="Fill" Value="Transparent" />
+        </Style>
+
+        <Style Selector="CheckBox.Star:checked /template/ Path#StarPath">
+            <Setter Property="Fill" Value="#FFB700" />
+        </Style>
+
+        <Style Selector="CheckBox.Star:pointerover /template/ Path#StarPath">
+            <Setter Property="Opacity" Value="0.8" />
+        </Style>
+        <Style Selector="TextBox.Clean:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+        </Style>
+        <Style Selector="TextBox.Clean:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="Grid.SessionRow Button.HoverButton">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition
+                        Duration="0:0:0.2"
+                        Easing="CubicEaseOut"
+                        Property="Opacity" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Grid.SessionRow:pointerover Button.HoverButton">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="IsHitTestVisible" Value="True" />
+        </Style>
+    </UserControl.Styles>
+    <Grid
+        Background="Transparent"
+        Classes="SessionRow"
+        ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto"
+        ColumnSpacing="10"
+        Height="30"
+        x:Name="SessionRowGrid">
+        <TextBox
+            Background="Transparent"
+            BorderThickness="0"
+            Classes="Clean"
+            FontSize="13"
+            FontWeight="Light"
+            MinWidth="110"
+            PlaceholderText="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionsPage.SessionList.SessionNamePlaceholder]}"
+            Text="{Binding $parent[views:SessionView].(views:SessionView.SessionModel).Name}"
+            VerticalContentAlignment="Center" />
+        <TextBlock
+            FontSize="12"
+            FontWeight="Light"
+            Grid.Column="1"
+            MinWidth="60"
+            Text="{Binding $parent[views:SessionView].(views:SessionView.SessionModel).LastConnectedTime}"
+            VerticalAlignment="Center" />
+        <Button
+            Classes="HoverButton"
+            Command="{Binding $parent[views:SessionView].(views:SessionView.ConnectCommand)}"
+            CommandParameter="{Binding $parent[views:SessionView].(views:SessionView.SessionModel)}"
+            Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[ConnectionsPage.DirectConnect.Button]}"
+            FontSize="13"
+            Grid.Column="2"
+            VerticalAlignment="Center" />
+        <Grid Grid.Column="3" />
+        <TextBlock
+            FontSize="13"
+            Grid.Column="4"
+            MinWidth="90"
+            Text="{Binding $parent[views:SessionView].(views:SessionView.SessionModel).NetworkAddress}"
+            VerticalAlignment="Center" />
+        <StackPanel
+            Grid.Column="5"
+            VerticalAlignment="Center"
+            Width="25">
+            <CheckBox
+                Classes="Star"
+                Content=""
+                Height="16"
+                HorizontalAlignment="Center"
+                IsChecked="{Binding $parent[views:SessionView].(views:SessionView.SessionModel).IsFavourite}"
+                IsVisible="{Binding #SessionRowGrid.IsPointerOver}"
+                Margin="0"
+                VerticalAlignment="Center"
+                Width="16" />
+        </StackPanel>
+    </Grid>
+</UserControl>

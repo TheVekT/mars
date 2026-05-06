@@ -1,0 +1,98 @@
+# IDE / editor settings
+.idea/
+.vscode/
+.vs/
+*.iml
+*.code-workspace
+
+# build outputs and user-specific files and folders
+Build/
+/Mars.CLI/bin/
+/Mars.CLI/obj/
+/Mars.Daemon/bin/
+/Mars.Daemon/obj/
+/Mars.Shared/bin/
+/Mars.Shared/obj/
+/Mars.UI/bin/
+/Mars.UI/obj/
+*.user
+*.suo
+*.rsuser
+*.userosscache
+*.sln.docstates
+TestResults/
+artifacts/
+BenchmarkDotNet.Artifacts/
+
+# Python caches and tooling
+**/__pycache__/
+*.py[cod]
+*.py,cover
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+pip-wheel-metadata/
+*.egg-info/
+.eggs/
+
+# Virtual environments and local env files
+.venv/
+venv/
+env/
+ENV/
+.env
+.env.local
+.env.*.local
+
+# Logs, caches and temporary files
+*.log
+*.pid
+*.seed
+*.tmp
+*.temp
+*.cache
+*.orig
+*.rej
+TEMP_*
+temp/
+tmp/
+coverage/
+
+# Frontend / Node.js artifacts
+**/node_modules/
+**/.parcel-cache/
+**/.next/
+**/.nuxt/
+**/.svelte-kit/
+**/dist/
+**/build/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# Python runtimes
+/python-runtime/win64/
+/python-runtime/linux/
+
+/python-runtime/win64.zip
+/python-runtime/linux.tar.gz
+
+# Ignored modules folder from mars-server
+mars-server/modules/
+
+# Ignore test web client
+test-web-client

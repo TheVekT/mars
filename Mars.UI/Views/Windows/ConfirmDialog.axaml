@@ -1,0 +1,33 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:services="clr-namespace:Mars.UI.Services"
+        x:Class="Mars.UI.Views.Windows.ConfirmDialog"
+        Title="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[Dialog.Confirm.Title]}"
+        Width="400" Height="180"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+        TransparencyLevelHint="Mica"
+        ExtendClientAreaToDecorationsHint="True">
+    
+    <Grid RowDefinitions="*, Auto" Margin="20, 40, 20, 20">
+        <TextBlock x:Name="MessageTextBlock" 
+                   TextWrapping="Wrap" 
+                   FontSize="14" 
+                   VerticalAlignment="Center" 
+                   HorizontalAlignment="Center" 
+                   TextAlignment="Center"/>
+        
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+            <Button x:Name="YesButton" 
+                    Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[Dialog.Confirm.Yes]}" 
+                    Classes="Accent" 
+                    Click="YesButton_Click" 
+                    Padding="20,8"/>
+            <Button x:Name="NoButton" 
+                    Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[Dialog.Confirm.No]}" 
+                    Click="NoButton_Click" 
+                    Padding="20,8"/>
+        </StackPanel>
+    </Grid>
+</Window>

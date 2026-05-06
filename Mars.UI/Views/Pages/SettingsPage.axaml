@@ -1,0 +1,79 @@
+﻿<UserControl
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d"
+    x:Class="Mars.UI.Views.SettingsPage"
+    x:DataType="viewModels:SettingsViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:services="clr-namespace:Mars.UI.Services"
+    xmlns:viewModels="clr-namespace:Mars.UI.ViewModels"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.DataContext>
+        <viewModels:SettingsViewModel />
+    </Design.DataContext>
+    <StackPanel Orientation="Vertical" Spacing="10">
+        <TextBlock FontSize="16" Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.Title]}" />
+        <Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="40">
+            <StackPanel Orientation="Vertical" Spacing="15">
+                <TextBlock FontSize="15" Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.Global.Title]}" />
+                <StackPanel Spacing="8">
+                    <TextBlock FontSize="14" Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.Language]}" />
+                    <ComboBox
+                        FontSize="13"
+                        ItemsSource="{Binding AppStore.AvailableLanguages}"
+                        MinWidth="180"
+                        SelectedItem="{Binding AppStore.SelectedLanguage}" />
+                </StackPanel>
+                <StackPanel Spacing="8">
+                    <TextBlock FontSize="14" Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.Theme]}" />
+                    <ComboBox
+                        FontSize="13"
+                        MinWidth="180"
+                        SelectedIndex="{Binding AppStore.SelectedThemeIndex}">
+                        <ComboBoxItem Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.Theme.System]}" />
+                        <ComboBoxItem Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.Theme.Light]}" />
+                        <ComboBoxItem Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.Theme.Dark]}" />
+                    </ComboBox>
+
+                </StackPanel>
+                <CheckBox Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.UseCredentials]}" IsChecked="{Binding AppStore.UseOsCredentials}" />
+
+            </StackPanel>
+            <StackPanel
+                Grid.Column="1"
+                Orientation="Vertical"
+                Spacing="15">
+                <TextBlock FontSize="15" Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.Server.Title]}" />
+                <CheckBox Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.AutoUpdateModules]}" IsChecked="{Binding AppStore.AutoUpdateModules}" />
+            </StackPanel>
+            <StackPanel
+                Grid.Column="2"
+                Orientation="Vertical"
+                Spacing="15">
+                <TextBlock FontSize="15" Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.Client.Title]}" />
+                <StackPanel Orientation="Vertical" Spacing="8">
+                    <TextBlock FontSize="14" Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.Client.Connecting]}" />
+                    <CheckBox Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.UseLastPassword]}" IsChecked="{Binding AppStore.UseLastPassword}" />
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Spacing="8">
+                    <TextBlock FontSize="14" Text="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.Client.RemoteControl]}" />
+                    <ComboBox SelectedItem="{Binding AppStore.SelectedQuality}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource StringLocalizationConverter}, ConverterParameter='RemoteControlWindow.Quality'}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                        <x:String>best</x:String>
+                        <x:String>optimal</x:String>
+                        <x:String>performance</x:String>
+                    </ComboBox>
+                    <CheckBox Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.ShowDeviceCursor]}" IsChecked="{Binding AppStore.ShowDeviceCursor}" />
+                    <CheckBox Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.DeviceAudioSource]}" IsChecked="{Binding AppStore.DeviceAudioSource}" />
+                    <CheckBox Content="{Binding Source={x:Static services:LocalizationService.Instance}, Path=[SettingsPage.ClipboardSync]}" IsChecked="{Binding AppStore.ClipboardSync}" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </StackPanel>
+</UserControl>
