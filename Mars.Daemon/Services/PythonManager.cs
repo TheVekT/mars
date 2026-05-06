@@ -11,15 +11,17 @@ public class PythonManager : IDisposable
 {
     private readonly DaemonConfigService _config;
     private readonly PythonRuntimeService _runtime;
+    private readonly NetworkService _networkService;
     private readonly ModulesService _modulesService;
 
     private Process? _process;
 
-    public PythonManager(DaemonConfigService config, PythonRuntimeService runtime, ModulesService modulesService)
+    public PythonManager(DaemonConfigService config, PythonRuntimeService runtime, ModulesService modulesService, NetworkService networkService)
     {
         _config = config;
         _runtime = runtime;
         _modulesService = modulesService;
+        _networkService = networkService;
         
         if (_config.GetDisableIncompatibleModules())
             _modulesService.DisableIncompatibleModules();
@@ -87,6 +89,7 @@ public class PythonManager : IDisposable
         _config.EnsureConfigExists();
         _runtime.EnsureExecutionPermissions();
         _runtime.EnsurePipInstalled();
+        _networkService.ConfigureFirewall();
 
         if (_config.GetDisableIncompatibleModules())
         {

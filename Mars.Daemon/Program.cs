@@ -25,6 +25,7 @@ builder.Services.AddSingleton<DaemonConfigService>();
 builder.Services.AddSingleton<PythonRuntimeService>();
 builder.Services.AddSingleton<PythonManager>();
 builder.Services.AddSingleton<ModulesService>();
+builder.Services.AddSingleton<NetworkService>();
 builder.Services.AddHostedService<IpcServerWorker>();
 
 
