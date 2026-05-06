@@ -179,7 +179,7 @@ public partial class ServerViewModel : ViewModelBase
         if (!IsServerRunning)
         {
             var status = await _ipcClientService.StartServerAsync();
-            IsServerRunning = status?.State == "Starting..." || status?.State == "Running";
+            IsServerRunning = status?.State == "Starting..." || status?.State == "Running" || status?.State == "Error";
             ServerStatus = IsServerRunning
                 ? LocalizationService.Instance["ServerPage.Status.Starting"]
                 : LocalizationService.Instance["ServerPage.Status.Stopped"];
@@ -318,12 +318,13 @@ public partial class ServerViewModel : ViewModelBase
             }
             
             IsDaemonConnected = true;
-            IsServerRunning = status.State == "Running" || status.State == "Starting...";
+            IsServerRunning = status.State == "Running" || status.State == "Starting..." || status.State == "Error";
             ServerStatus = status.State switch
             {
                 "Stopped" => LocalizationService.Instance["ServerPage.Status.Stopped"],
                 "Starting..." => LocalizationService.Instance["ServerPage.Status.Starting"],
                 "Running" => LocalizationService.Instance["ServerPage.Status.Running"],
+                "Error" => LocalizationService.Instance["ServerPage.Status.Error"],
                 _ => LocalizationService.Instance["ServerPage.Status.Unknown"]
             };
         }
