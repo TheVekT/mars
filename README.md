@@ -28,9 +28,9 @@ You can download the latest release from the [Releases](../../releases) page.
 The easiest way to deploy MARS. The installers automatically register the background daemon as a system service, update system `PATH` variables, and bundle core dependencies like FFmpeg.
 
 - **Windows (`.exe`):** Download `MARS_Setup_v1.0.0.exe` and run it. It will automatically bundle FFmpeg and register the `MarsDaemon` Windows Service.
-- **Linux (`.deb`):** Download `mars-server_1.0.0_amd64.deb` and run:
+- **Linux (`.deb`):** Download `mars-remote-system_1.0.0_amd64.deb` and run:
   ```bash
-  sudo apt install ./mars-server_1.0.0_amd64.deb
+  sudo apt install ./mars-remote-system_1.0.0_amd64.deb
   ```
   This package will automatically resolve and install ffmpeg via apt, set executable permissions, and configure the systemd daemon.
 
@@ -41,6 +41,13 @@ For advanced users who prefer standalone binaries without automated installation
 - You must manually execute the daemon executable with Administrator/Root privileges.
 - On Linux, you must manually grant execution permissions (`chmod +x`) to the C# binaries.
 - You must manually install ffmpeg and ensure it is available in your system's PATH for both the server machine and the client machine.
+
+## MARS Hub (Module Marketplace)
+
+MARS features an official [Module Marketplace (MARS Hub)](https://github.com/TheVekT/mars-hub) where you can discover and install additional modules to extend the system's capabilities.
+
+- **Direct Installation:** Browse and install modules directly from the MARS UI.
+- **Contribute:** Add your own Python-based modules to the marketplace to share with others.
 
 ## Building from Source
 To keep the git repository lightweight, the large portable Python runtimes are excluded from version control. You must download them manually before building the project.
@@ -70,4 +77,4 @@ To keep the git repository lightweight, the large portable Python runtimes are e
 The compiled output, including the bundled Python runtime and server code, will be located in `Build/Release/<runtime>/`.
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.

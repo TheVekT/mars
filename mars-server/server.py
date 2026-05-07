@@ -217,6 +217,7 @@ def main():
     parser.add_argument("--disabled-modules", nargs="*", default=[], help="List of modules to disable")
     parser.add_argument("--password", type=str, default="", help="Password (API Key) for client connection")
 
+    parser.add_argument("--pid-file", type=str, default="server.pid", help="Path to save the PID file")
     args = parser.parse_args()
 
     setup_logging()
@@ -270,10 +271,17 @@ def main():
     if args.disabled_modules:
         logger.info(f"Disabled modules: {', '.join(args.disabled_modules)}")
 
+    with open(args.pid_file, "w") as f:
+        f.write(str(os.getpid()))
+
     global _uvicorn_server
-    config = uvicorn.Config(app, host=args.host, port=args.port, log_config=None, ws_ping_interval=None, ws_ping_timeout=None)
-    _uvicorn_server = uvicorn.Server(config)
-    _uvicorn_server.run()
+    try:
+        config = uvicorn.Config(app, host=args.host, port=args.port, log_config=None, ws_ping_interval=None, ws_ping_timeout=None)
+        _uvicorn_server = uvicorn.Server(config)
+        _uvicorn_server.run()
+    finally:
+        if os.path.exists(args.pid_file):
+            os.remove(args.pid_file)
 
 if __name__ == "__main__":
     main()

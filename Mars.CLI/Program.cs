@@ -433,7 +433,7 @@ internal class Program
     private static void ShowHelp()
     {
         Console.WriteLine("MARS Command Line Interface");
-        Console.WriteLine("Usage: mars-cli [command]");
+        Console.WriteLine("Usage: mars [command]");
         Console.WriteLine();
         Console.WriteLine("Commands:");
         Console.WriteLine("  --start                          Starts the MARS Python server");
