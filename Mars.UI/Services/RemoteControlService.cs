@@ -107,25 +107,40 @@ public class RemoteControlService : IRemoteControlService
     {
         _cts?.Cancel();
         
-        _decoder?.Dispose();
+        // Run blocking disposals in background to avoid freezing UI
+        var decoder = _decoder;
+        var audio = _audioPlayer;
         _decoder = null;
-        
-        _audioPlayer?.Dispose();
         _audioPlayer = null;
+        
+        Task.Run(() => {
+            decoder?.Dispose();
+            audio?.Dispose();
+        });
 
-        CloseWebSocket(ref _videoWs);
-        CloseWebSocket(ref _audioWs);
-        CloseWebSocket(ref _clipboardWs);
+        _ = CloseWebSocketAsync(_videoWs);
+        _ = CloseWebSocketAsync(_audioWs);
+        _ = CloseWebSocketAsync(_clipboardWs);
+        
+        _videoWs = null;
+        _audioWs = null;
+        _clipboardWs = null;
     }
 
-    private void CloseWebSocket(ref ClientWebSocket? ws)
+    private async Task CloseWebSocketAsync(ClientWebSocket? ws)
     {
         if (ws != null)
         {
-            if (ws.State == WebSocketState.Open)
-                ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
-            ws.Dispose();
-            ws = null;
+            try
+            {
+                if (ws.State == WebSocketState.Open || ws.State == WebSocketState.CloseReceived)
+                    await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", CancellationToken.None);
+            }
+            catch { }
+            finally
+            {
+                ws.Dispose();
+            }
         }
     }
 
@@ -137,7 +152,12 @@ public class RemoteControlService : IRemoteControlService
             {
                 string json = JsonSerializer.Serialize(command);
                 var bytes = Encoding.UTF8.GetBytes(json);
-                _videoWs.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
+                // Fire and forget for commands is okay as they are sequenced by the socket itself,
+                // but we wrap in Task.Run to ensure we don't block the caller if the buffer is full.
+                _ = Task.Run(async () => {
+                    try { await _videoWs.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None); }
+                    catch { }
+                });
             }
             catch { }
         }
@@ -158,7 +178,7 @@ public class RemoteControlService : IRemoteControlService
         if (enabled && _clipboardWs == null && _serverAddress != null)
             _ = Task.Run(ConnectClipboardAsync);
         else if (!enabled)
-            CloseWebSocket(ref _clipboardWs);
+            _ = CloseWebSocketAsync(_clipboardWs);
     }
 
     private async Task ConnectClipboardAsync()

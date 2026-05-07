@@ -256,7 +256,7 @@ public class PythonManager : IDisposable
         Task.Run(async () => {
             try {
                 using var client = new System.Net.Http.HttpClient();
-                await client.GetAsync(shutdownUrl);
+                await client.PostAsync(shutdownUrl, null);
             } catch { }
 
             int wait = 0;
