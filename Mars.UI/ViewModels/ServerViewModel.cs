@@ -318,11 +318,12 @@ public partial class ServerViewModel : ViewModelBase
             }
             
             IsDaemonConnected = true;
-            IsServerRunning = status.State == "Running" || status.State == "Starting..." || status.State == "Error";
+            IsServerRunning = status.State == "Running" || status.State == "Starting..." || status.State == "Error" || status.State == "Stopping...";
             ServerStatus = status.State switch
             {
                 "Stopped" => LocalizationService.Instance["ServerPage.Status.Stopped"],
                 "Starting..." => LocalizationService.Instance["ServerPage.Status.Starting"],
+                "Stopping..." => LocalizationService.Instance["ServerPage.Status.Stopping"],
                 "Running" => LocalizationService.Instance["ServerPage.Status.Running"],
                 "Error" => LocalizationService.Instance["ServerPage.Status.Error"],
                 _ => LocalizationService.Instance["ServerPage.Status.Unknown"]

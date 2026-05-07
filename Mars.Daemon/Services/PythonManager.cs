@@ -1,11 +1,17 @@
+using System;
 using System.Diagnostics;
-using System.Net.Http;
+using System.IO;
+using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Security.AccessControl;
+using System.Security.Principal;
 
 namespace Mars.Daemon.Services;
 
 /// <summary>
-/// Manages the lifecycle of the Python server process: start, stop, status, and schema dump.
-/// All configuration and runtime concerns are delegated to the injected services.
+/// Manages the Python server process lifecycle across Windows and Linux.
+/// Handles session isolation on both platforms.
 /// </summary>
 public class PythonManager : IDisposable
 {
@@ -13,7 +19,6 @@ public class PythonManager : IDisposable
     private readonly PythonRuntimeService _runtime;
     private readonly NetworkService _networkService;
     private readonly ModulesService _modulesService;
-
     private Process? _process;
 
     public PythonManager(DaemonConfigService config, PythonRuntimeService runtime, ModulesService modulesService, NetworkService networkService)
@@ -27,22 +32,9 @@ public class PythonManager : IDisposable
             _modulesService.DisableIncompatibleModules();
     }
 
-    // -------------------------------------------------------------------------
-    // State
-    // -------------------------------------------------------------------------
-
-    /// <summary>Gets the current textual state of the server process.</summary>
     public string CurrentState { get; private set; } = "Stopped";
-
-    /// <summary>Returns true while the Python process is alive.</summary>
-    public bool IsRunning => _process != null && !_process.HasExited;
-
-    /// <summary>Gets the last error message produced during startup or runtime.</summary>
+    public bool IsRunning => CurrentState == "Running" || CurrentState == "Starting..." || (_process != null && !_process.HasExited);
     public string LastError { get; private set; } = string.Empty;
-
-    // -------------------------------------------------------------------------
-    // Forwarded path properties (used by IPC worker)
-    // -------------------------------------------------------------------------
 
     public string ModulesDirectory => _config.ModulesDirectory;
     public string GetLogPath() => _config.LogPath;
@@ -53,150 +45,250 @@ public class PythonManager : IDisposable
     public bool UpdateServerConfig(string key, string value) => _config.SetPythonArg(key, value);
     public bool RemoveServerConfig(string key) => _config.RemovePythonArg(key);
 
-    // -------------------------------------------------------------------------
-    // Lifecycle
-    // -------------------------------------------------------------------------
-
-    /// <summary>Starts the Python server process.</summary>
     public void StartServer()
     {
         if (IsRunning) return;
 
-        CurrentState = "Starting...";
-        LastError = string.Empty;
+        string pythonExe = _runtime.PythonExePath;
+        string serverScript = _runtime.ServerScriptPath;
+        string serverArgs = _config.GetPythonArgs();
 
-        var pythonExe = _runtime.PythonExePath;
-        var serverScript = _runtime.ServerScriptPath;
-
-        Console.WriteLine($"[Daemon] Python: {pythonExe}");
-        Console.WriteLine($"[Daemon] Script: {serverScript}");
-
-        if (!File.Exists(pythonExe))
-        {
-            CurrentState = "Error";
-            LastError = $"Python executable not found: {pythonExe}";
-            return;
-        }
-
-        if (!File.Exists(serverScript))
-        {
-            CurrentState = "Error";
-            LastError = $"Server script not found: {serverScript}";
-            return;
-        }
-
-        // Pre-flight checks
-        _config.EnsureConfigExists();
-        _runtime.EnsureExecutionPermissions();
-        _runtime.EnsurePipInstalled();
-        _networkService.ConfigureFirewall();
-
-        if (_config.GetDisableIncompatibleModules())
-        {
-            _modulesService.DisableIncompatibleModules();
-        }
-
-        var serverArgs = _config.GetPythonArgs();
-
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = pythonExe,
-            Arguments = $"\"{serverScript}\" {serverArgs}",
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true,
-            WorkingDirectory = Path.GetDirectoryName(serverScript)!
-        };
-
-        _process = new Process { StartInfo = startInfo };
-        _process.OutputDataReceived += HandleOutput;
-        _process.ErrorDataReceived += HandleOutput;
-
+        _process = null;
         try
         {
-            _process.Start();
-            _process.BeginOutputReadLine();
-            _process.BeginErrorReadLine();
+            string tempDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp");
+            if (!Directory.Exists(tempDir)) Directory.CreateDirectory(tempDir);
+            
+            string pidFile = Path.Combine(tempDir, "server.pid");
+            if (File.Exists(pidFile)) File.Delete(pidFile);
+
+            string workingDir = Path.GetDirectoryName(serverScript)!;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                string batPath = Path.Combine(tempDir, "run_server.bat");
+                string vbsPath = Path.Combine(tempDir, "run_hidden.vbs");
+                
+                string args = serverArgs;
+                if (!args.Contains("--host")) args = $"--host {_config.GetPythonArg("host", "0.0.0.0")} " + args;
+                if (!args.Contains("--port")) args = $"--port {_config.GetPythonArg("port", "8000")} " + args;
+                
+                args += $" --pid-file \"{pidFile}\"";
+                
+                string systemRoot = Environment.GetEnvironmentVariable("SystemRoot") ?? "C:\\Windows";
+                string systemDrive = Environment.GetEnvironmentVariable("SystemDrive") ?? "C:";
+                string pythonDir = Path.GetDirectoryName(pythonExe)!;
+
+                string batContent = "@echo off\r\n" +
+                                   $"set SYSTEMROOT={systemRoot}\r\n" +
+                                   $"set SYSTEMDRIVE={systemDrive}\r\n" +
+                                   "set TEMP=%USERPROFILE%\\AppData\\Local\\Temp\r\n" +
+                                   "set TMP=%USERPROFILE%\\AppData\\Local\\Temp\r\n" +
+                                   $"set PATH={pythonDir};{systemRoot}\\system32;{systemRoot};{systemRoot}\\System32\\Wbem;%PATH%\r\n" +
+                                   $"cd /d \"{workingDir}\"\r\n" +
+                                   $"\"{pythonExe}\" \"{serverScript}\" {args}";
+                
+                File.WriteAllText(batPath, batContent);
+
+                string vbsContent = "Set WshShell = CreateObject(\"WScript.Shell\")\r\n" +
+                                   $"WshShell.Run \"cmd.exe /c \" & Chr(34) & \"{batPath}\" & Chr(34), 0, False\r\n" +
+                                   "Set WshShell = Nothing";
+                File.WriteAllText(vbsPath, vbsContent);
+
+                ApplyPermissions(batPath, vbsPath, tempDir);
+
+                string interactiveName = GetInteractiveGroupName();
+                string taskName = "MarsServerTask";
+                string createCmd = $"/c schtasks /create /tn {taskName} /tr \"wscript.exe \\\"{vbsPath}\\\"\" /sc once /st 00:00 /ru \"{interactiveName}\" /rl HIGHEST /f";
+                
+                Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = createCmd, CreateNoWindow = true, UseShellExecute = false })?.WaitForExit();
+                Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = $"/c schtasks /run /tn {taskName}", CreateNoWindow = true, UseShellExecute = false })?.WaitForExit();
+                
+                CurrentState = "Starting...";
+            }
+            else
+            {
+                // Linux logic
+                string? display = ":0";
+                string? xauth = null;
+                string? userUid = "1000";
+                string? userName = null;
+
+                try {
+                    var loginctl = Process.Start(new ProcessStartInfo { 
+                        FileName = "loginctl", 
+                        Arguments = "list-sessions --no-legend", 
+                        RedirectStandardOutput = true, 
+                        UseShellExecute = false 
+                    });
+                    string? line = loginctl?.StandardOutput.ReadLine();
+                    if (line != null) {
+                        var parts = line.Trim().Split(' ', System.StringSplitOptions.RemoveEmptyEntries);
+                        if (parts.Length > 2) {
+                            var sessionId = parts[0];
+                            var sessionInfo = Process.Start(new ProcessStartInfo { 
+                                FileName = "loginctl", 
+                                Arguments = $"show-session {sessionId} -p Name -p User -p Display", 
+                                RedirectStandardOutput = true, 
+                                UseShellExecute = false 
+                            });
+                            var output = sessionInfo?.StandardOutput.ReadToEnd();
+                            if (output != null) {
+                                foreach (var infoLine in output.Split('\n')) {
+                                    if (infoLine.StartsWith("User=")) userUid = infoLine.Split('=')[1].Trim();
+                                    if (infoLine.StartsWith("Name=")) userName = infoLine.Split('=')[1].Trim();
+                                    if (infoLine.StartsWith("Display=")) display = infoLine.Split('=')[1].Trim();
+                                }
+                            }
+                        }
+                    }
+                } catch { }
+
+                if (string.IsNullOrEmpty(userName)) userName = "user";
+
+                var possibleXauths = new[] {
+                    $"/run/user/{userUid}/xauth",
+                    $"/run/user/{userUid}/gdm/Xauthority",
+                    $"/home/{userName}/.Xauthority",
+                    $"/root/.Xauthority"
+                };
+
+                foreach (var path in possibleXauths) {
+                    if (File.Exists(path)) {
+                        xauth = path;
+                        break;
+                    }
+                }
+
+                _process = new Process();
+                _process.StartInfo.FileName = pythonExe;
+                _process.StartInfo.Arguments = $"\"{serverScript}\" {serverArgs} --pid-file \"{pidFile}\"";
+                _process.StartInfo.UseShellExecute = false;
+                _process.StartInfo.WorkingDirectory = workingDir;
+                
+                _process.StartInfo.EnvironmentVariables["DISPLAY"] = string.IsNullOrEmpty(display) ? ":0" : display;
+                if (!string.IsNullOrEmpty(xauth))
+                    _process.StartInfo.EnvironmentVariables["XAUTHORITY"] = xauth;
+                _process.StartInfo.EnvironmentVariables["XDG_RUNTIME_DIR"] = $"/run/user/{userUid}";
+                _process.StartInfo.EnvironmentVariables["MARS_SESSION_USER"] = userName;
+                
+                _process.Start();
+                CurrentState = "Starting...";
+            }
+
+            Task.Run(async () => {
+                int attempts = 0;
+                string portStr = _config.GetPythonArg("port", "8000");
+                int port = int.Parse(portStr);
+                while (attempts < 60) {
+                    try {
+                        using var client = new TcpClient();
+                        await client.ConnectAsync("127.0.0.1", port); 
+                        
+                        if (_process == null && File.Exists(pidFile)) {
+                            try {
+                                int pid = int.Parse(File.ReadAllText(pidFile).Trim());
+                                _process = Process.GetProcessById(pid);
+                            } catch { }
+                        }
+
+                        CurrentState = "Running";
+                        CleanupTask();
+                        return;
+                    } catch {
+                        attempts++;
+                        await Task.Delay(1000);
+                    }
+                }
+                CurrentState = "Error";
+                LastError = "Server failed to start (Timeout)";
+            });
         }
         catch (Exception ex)
         {
-            CurrentState = "Start failed";
+            CurrentState = "Error";
             LastError = ex.Message;
         }
     }
 
-    /// <summary>
-    /// Gracefully stops the server via its local HTTP endpoint.
-    /// Falls back to Kill() if the process doesn't exit within the timeout.
-    /// </summary>
+    private void ApplyPermissions(params string[] paths)
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
+        
+        try {
+            foreach (var path in paths) {
+                var fileInfo = new FileInfo(path);
+                var accessControl = fileInfo.GetAccessControl();
+                accessControl.AddAccessRule(new FileSystemAccessRule(
+                    new SecurityIdentifier(WellKnownSidType.WorldSid, null),
+                    FileSystemRights.ReadAndExecute,
+                    AccessControlType.Allow));
+                fileInfo.SetAccessControl(accessControl);
+            }
+        } catch { }
+    }
+
+    private string GetInteractiveGroupName()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return "INTERACTIVE";
+        
+        try {
+            var sid = new SecurityIdentifier(WellKnownSidType.InteractiveSid, null);
+            return sid.Translate(typeof(NTAccount)).Value;
+        } catch { }
+        
+        return "INTERACTIVE";
+    }
+
     public void StopServer()
     {
         if (_process == null || _process.HasExited)
         {
             CurrentState = "Stopped";
+            CleanupTask();
             return;
         }
 
         CurrentState = "Stopping...";
-        Console.WriteLine("[Daemon] Requesting Python server shutdown via HTTP...");
-
-        var port = _config.GetPythonArg("--port", "8000");
+        var port = _config.GetPythonArg("port", "8000");
         var shutdownUrl = $"http://127.0.0.1:{port}/admin/shutdown";
 
-        try
-        {
-            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
-            http.PostAsync(shutdownUrl, null).Wait();
-            Console.WriteLine("[Daemon] Shutdown request sent. Waiting for process to exit...");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Daemon] HTTP shutdown failed ({ex.Message}), falling back to Kill.");
-        }
+        Task.Run(async () => {
+            try {
+                using var client = new System.Net.Http.HttpClient();
+                await client.GetAsync(shutdownUrl);
+            } catch { }
 
-        if (!_process.WaitForExit(5000))
-        {
-            Console.WriteLine("[Daemon] Process did not exit in time, killing forcefully.");
-            try { _process.Kill(entireProcessTree: true); } catch { }
-            _process.WaitForExit(2000);
-        }
+            int wait = 0;
+            while (!_process.HasExited && wait < 5) {
+                await Task.Delay(1000);
+                wait++;
+            }
 
-        CurrentState = "Stopped";
-        Console.WriteLine("[Daemon] Python server stopped.");
+            if (!_process.HasExited) {
+                try { _process.Kill(); } catch { }
+            }
+            
+            _process = null;
+            CurrentState = "Stopped";
+            CleanupTask();
+        });
     }
 
-    /// <summary>Runs the server with --dump-schema and returns the JSON output.</summary>
     public string DumpSchema()
     {
-        var pythonExe = _runtime.PythonExePath;
-        var serverScript = _runtime.ServerScriptPath;
-
-        if (!File.Exists(pythonExe) || !File.Exists(serverScript))
-            return "{\"error\": \"Runtime files not found\"}";
-
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = pythonExe,
-            Arguments = $"\"{serverScript}\" --dump-schema",
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            CreateNoWindow = true,
-            WorkingDirectory = Path.GetDirectoryName(serverScript)!
-        };
-
         try
         {
-            using var process = Process.Start(startInfo);
-            if (process == null) return string.Empty;
-
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit(5000);
-
-            return output
-                .Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries)
-                .LastOrDefault(l => { var t = l.TrimStart(); return t.StartsWith('{') || t.StartsWith('['); })
-                ?? string.Empty;
+            var info = new ProcessStartInfo
+            {
+                FileName = _runtime.PythonExePath,
+                Arguments = $"\"{_runtime.ServerScriptPath}\" --dump-schema",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            using var proc = Process.Start(info);
+            return proc?.StandardOutput.ReadToEnd() ?? string.Empty;
         }
         catch (Exception ex)
         {
@@ -204,41 +296,19 @@ public class PythonManager : IDisposable
         }
     }
 
-    public void Dispose()
+    private void CleanupTask()
     {
-        StopServer();
-        _process?.Dispose();
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            try {
+                Process.Start(new ProcessStartInfo { FileName = "cmd.exe", Arguments = "/c schtasks /delete /tn MarsServerTask /f", CreateNoWindow = true, UseShellExecute = false });
+            } catch { }
+        }
     }
 
-    // -------------------------------------------------------------------------
-    // Private helpers
-    // -------------------------------------------------------------------------
-
-    private void HandleOutput(object sender, DataReceivedEventArgs e)
+    public void Dispose()
     {
-        if (string.IsNullOrWhiteSpace(e.Data)) return;
-        Console.WriteLine($"[Python] {e.Data}");
-
-        if (e.Data.Contains("Installing missing library", StringComparison.OrdinalIgnoreCase))
-            CurrentState = "Installing dependencies...";
-        else if (e.Data.Contains("Library '", StringComparison.OrdinalIgnoreCase) &&
-                 e.Data.Contains("installed successfully", StringComparison.OrdinalIgnoreCase))
-            CurrentState = "Loading modules...";
-        else if (e.Data.StartsWith("Found module:", StringComparison.OrdinalIgnoreCase) ||
-                 e.Data.StartsWith("Skipping", StringComparison.OrdinalIgnoreCase) ||
-                 e.Data.StartsWith("Module loaded successfully:", StringComparison.OrdinalIgnoreCase))
-            CurrentState = "Loading modules...";
-        else if (e.Data.Contains("MARS server is ready on", StringComparison.OrdinalIgnoreCase) ||
-                 e.Data.Contains("Application startup complete", StringComparison.OrdinalIgnoreCase) ||
-                 e.Data.Contains("Uvicorn running on", StringComparison.OrdinalIgnoreCase))
-            CurrentState = "Running";
-        else if (e.Data.Contains("Failed to install", StringComparison.OrdinalIgnoreCase) ||
-                 e.Data.Contains("Failed to load module", StringComparison.OrdinalIgnoreCase) ||
-                 e.Data.Contains("[ERROR]", StringComparison.OrdinalIgnoreCase) ||
-                 e.Data.Contains("Exception", StringComparison.OrdinalIgnoreCase))
-        {
-            CurrentState = "Error";
-            LastError = e.Data;
-        }
+        if (_process != null && !_process.HasExited)
+            StopServer();
     }
 }
