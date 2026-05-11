@@ -94,7 +94,7 @@ public partial class ScalarActionViewModel : HttpActionViewModel
                 {
                     var res = await ApiClient.FetchTextAsync(Ip, Port, Token, Schema.Endpoint);
                     JsonElement? json = null;
-                    try { json = JsonDocument.Parse(res).RootElement; } catch { }
+                    try { using var doc = JsonDocument.Parse(res); json = doc.RootElement.Clone(); } catch { }
                     Avalonia.Threading.Dispatcher.UIThread.Post(() => OnDataReceived(res, json));
                 }
                 catch
@@ -150,7 +150,7 @@ public partial class MultilineActionViewModel : HttpActionViewModel
                 {
                     var res = await ApiClient.FetchTextAsync(Ip, Port, Token, Schema.Endpoint);
                     JsonElement? json = null;
-                    try { json = JsonDocument.Parse(res).RootElement; } catch { }
+                    try { using var doc = JsonDocument.Parse(res); json = doc.RootElement.Clone(); } catch { }
                     Avalonia.Threading.Dispatcher.UIThread.Post(() => OnDataReceived(res, json));
                 }
                 catch
@@ -216,7 +216,7 @@ public partial class DatasetActionViewModel : HttpActionViewModel
                 {
                     var res = await ApiClient.FetchTextAsync(Ip, Port, Token, Schema.Endpoint);
                     JsonElement? json = null;
-                    try { json = JsonDocument.Parse(res).RootElement; } catch { }
+                    try { using var doc = JsonDocument.Parse(res); json = doc.RootElement.Clone(); } catch { }
                     Avalonia.Threading.Dispatcher.UIThread.Post(() => OnDataReceived(res, json));
                 }
                 catch
@@ -518,7 +518,8 @@ public partial class ExecuteFormActionViewModel : HttpActionViewModel
                                     try
                                     {
                                         var res = await ApiClient.FetchTextAsync(Ip, Port, Token, sourceEndpoint);
-                                        var json = JsonDocument.Parse(res).RootElement;
+                                        using var doc = JsonDocument.Parse(res);
+                                        var json = doc.RootElement.Clone();
                                         Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                                         {
                                             vm.Options.Clear();
@@ -570,7 +571,8 @@ public partial class ExecuteFormActionViewModel : HttpActionViewModel
             
             try 
             {
-                var json = JsonDocument.Parse(res).RootElement;
+                using var doc = JsonDocument.Parse(res);
+                var json = doc.RootElement;
                 if (json.TryGetProperty("message", out var msg)) StatusMessage = msg.ToString();
                 else StatusMessage = LocalizationService.Instance["HttpModule.Done"];
             }

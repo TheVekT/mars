@@ -44,7 +44,7 @@ public class RemoteFileSystemService : IDisposable
 
     public async Task<(string resolvedPath, List<FileItemInfo> items)> ListDirectoryAsync(string? path, bool showHidden = false)
     {
-        var response = await SendAndWaitAsync("list_dir", new { path, show_hidden = showHidden });
+        using var response = await SendAndWaitAsync("list_dir", new { path, show_hidden = showHidden });
         var items = new List<FileItemInfo>();
         
         string resolvedPath = response.RootElement.TryGetProperty("path", out var p) ? p.GetString() ?? "" : "";
@@ -70,22 +70,22 @@ public class RemoteFileSystemService : IDisposable
 
     public async Task DeleteAsync(List<string> paths)
     {
-        await SendAndWaitAsync("delete", new { paths });
+        using var _ = await SendAndWaitAsync("delete", new { paths });
     }
 
     public async Task RenameAsync(string path, string newName)
     {
-        await SendAndWaitAsync("rename", new { path, new_name = newName });
+        using var _ = await SendAndWaitAsync("rename", new { path, new_name = newName });
     }
 
     public async Task CreateDirectoryAsync(string path)
     {
-        await SendAndWaitAsync("create_dir", new { path });
+        using var _ = await SendAndWaitAsync("create_dir", new { path });
     }
 
     public async Task TransferLocalAsync(List<string> sources, string destFolder, string mode, bool overwrite = false)
     {
-        await SendAndWaitAsync("transfer_local", new { sources, dest_folder = destFolder, mode, overwrite });
+        using var _ = await SendAndWaitAsync("transfer_local", new { sources, dest_folder = destFolder, mode, overwrite });
     }
 
     public async Task UploadAsync(string localPath, string remoteDest, bool overwrite, IProgress<double>? progress, CancellationToken ct)

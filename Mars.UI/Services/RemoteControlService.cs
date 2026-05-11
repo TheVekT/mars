@@ -207,7 +207,7 @@ public class RemoteControlService : IRemoteControlService
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
                     string json = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                    var doc = JsonDocument.Parse(json);
+                    using var doc = JsonDocument.Parse(json);
                     if (doc.RootElement.TryGetProperty("action", out var action) && 
                         action.GetString() == "update" &&
                         doc.RootElement.TryGetProperty("text", out var text))

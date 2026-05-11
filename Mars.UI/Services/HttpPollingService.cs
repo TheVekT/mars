@@ -109,7 +109,7 @@ public class HttpPollingService : IDisposable
                     JsonElement? json = null;
                     try
                     {
-                        var doc = JsonDocument.Parse(rawText);
+                        using var doc = JsonDocument.Parse(rawText);
                         json = doc.RootElement.Clone();
                     }
                     catch { /* Not JSON */ }
